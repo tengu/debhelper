@@ -13,6 +13,20 @@ Setup a simple, signed apt repository.
 * Create the repo directory. 
 * Create the public key file for client to import.
 
+
+### Updating a repo
+```debhelper.py update_repo --help```
+
+Update the repo so that the newly added deb files are incorporated.
+
+It does the equivalent of:
+* cd /var/data/debrepo/
+* apt-ftparchive packages . > Packages
+* gzip -c Packages > Packages.gz
+* apt-ftparchive release . > Release
+* gpg --yes -abs -u `cat keyname` -o Release.gpg Release
+
+
 ### TODO
 * write this file
 * tests
