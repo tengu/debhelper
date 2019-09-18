@@ -382,7 +382,7 @@ def setup_repo(conf_file=None, verbose=1, dryrun=False, gen_key=True):
     Create debrepo user.
     Create gpg key for signing the repo.
     Create the repo directory.
-    Create the public key for client to import.
+    Create the public key file for client to import.
     """
     dr = DebRepo(dryrun=dryrun, **config(conf_file=conf_file, verbose=verbose))
     s = dr.setup_repo(gen_key=gen_key)

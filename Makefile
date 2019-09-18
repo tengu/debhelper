@@ -9,3 +9,9 @@ sdist:
 
 pypi-upload:
 	python3 setup.py sdist upload
+
+####
+
+h:
+	./debhelper.py setup_repo --help
+
