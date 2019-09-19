@@ -20,9 +20,11 @@ debrepohelper
 
 A script to help you setup and manage deb repo.
 
-### Setting up a repo
+## Setting up a repo
 
-```debhelper.py setup_repo --help```
+```
+debhelper.py setup_repo --help
+```
 
 Setup a simple, signed apt repository.
 
@@ -32,9 +34,11 @@ Setup a simple, signed apt repository.
 * Create the public key file for client to import.
 
 
-### Updating a repo
+## Updating a repo
 
-```debhelper.py update_repo --help```
+```
+debhelper.py update_repo --help
+```
 
 Update the repo so that the newly added deb files are incorporated.
 

@@ -1,6 +1,8 @@
 
 all:
 
+include local.mk
+
 clean:
 	rm -fr *.egg-info .eggs dist
 
