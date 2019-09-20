@@ -22,9 +22,9 @@ defaults = {
     'uid': 1900,
     'repo_path': '/var/data/debrepo/',
     # This command expects passphrase from stdin. cwd must be the repo dir.
-    'gpg_sign_cmd': '/usr/bin/gpg -as --pinentry-mode loopback --yes --passphrase-fd 0 -u {keyname} -o Release.gpg Release',
+    'gpg_sign_cmd': '/usr/bin/gpg --default-key {keyname} -abs --pinentry-mode loopback --yes --passphrase-fd 0 -o Release.gpg Release',
     'gpg_passphrase': 'hirakegoma',
-    'verbose': 0,
+    'verbose': 1,
 }
 
 
@@ -34,11 +34,12 @@ def config(conf_file=None, **override):
     if not conf_file:
         conf_file = default_conf_file
     config = defaults.copy()
-    with open(conf_file, 'r') as config_json:
-        config.update(
-            json.load(config_json)
-        )
-    config.update(override)
+    if os.path.exists(conf_file):
+        with open(conf_file, 'r') as config_json:
+            config.update(
+                json.load(config_json)
+            )
+        config.update(override)
     return config
 
 
@@ -189,10 +190,9 @@ class DebRepo:
         """Create config file for gpg key generation.
         """
         gen_key_cfg=f"""
-        Key-Type: 1
-        Key-Length: 2048
-        Subkey-Type: 1
-        Subkey-Length: 2048
+        Key-Type: RSA
+        Key-Length: 4096
+        Subkey-Length: 4096
         Name-Real: {self.user}
         Name-Email: {self.user}@example.com
         Passphrase: {self.gpg_passphrase}
@@ -452,6 +452,28 @@ def util_entropy():
     call('/usr/bin/sudo /usr/sbin/rngd -f -r /dev/urandom', shell=True)
 
 
+@baker.command
+def x_apt_get_update_selectively(list_file, dryrun=False, verbose=False):
+    """apt-get update only the named source.
+    """
+    cmd="""
+    sudo apt-get update
+       -o Dir::Etc::sourcelist="sources.list.d/{list_file}"
+       -o Dir::Etc::sourceparts="-"
+       -o APT::Get::List-Cleanup="0"
+    """.strip().replace('\n', ' ').format(list_file=list_file)
+
+    cmd=re.sub(r'\s+', ' ', cmd)
+
+    if verbose or dryrun:
+        print(cmd)
+
+    if dryrun:
+        sys.exit(0)
+    else:
+        sys.exit(call(cmd, shell=True))
+
+
 #### Remote repo update client-server protocol. Not Ready for primetime yet.
 # @baker.command
 def push(repo_host, user='debrepo', verbose=False):
@@ -460,17 +482,17 @@ def push(repo_host, user='debrepo', verbose=False):
 
     stdin:  deb file paths
 
-    usage:  
+    usage:
             find build -name '*.deb' | aptrepo.py push repo-host
 
     to make the deb files immediately available to the local host, follow with:
 
             aptrepo.py apt_get_update_selectively repo-host.list
 
-    prerequisite: 
+    prerequisite:
      * This command must be installed on the repo_host and be available in the path of the repo user.
        Test with:
-            ssh debrepo@repo-host aptrepo.py 
+            ssh debrepo@repo-host aptrepo.py
        Help menu should be printed.
     """
     # input stream: deb file paths
