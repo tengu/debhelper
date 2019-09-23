@@ -475,7 +475,7 @@ def x_apt_get_update_selectively(list_file, dryrun=False, verbose=False):
 
 
 #### Remote repo update client-server protocol. Not Ready for primetime yet.
-# @baker.command
+@baker.command
 def push(repo_host, user='debrepo', verbose=False):
     """make deb files avaiable via the repo.
     push deb files fed to stdin to the repo.
@@ -483,17 +483,16 @@ def push(repo_host, user='debrepo', verbose=False):
     stdin:  deb file paths
 
     usage:
-            find build -name '*.deb' | aptrepo.py push repo-host
+            find build -name '*.deb' | debhelper.py push repo-host
 
     to make the deb files immediately available to the local host, follow with:
 
-            aptrepo.py apt_get_update_selectively repo-host.list
+            debhelper.py x_apt_get_update_selectively repo-host.list
 
     prerequisite:
      * This command must be installed on the repo_host and be available in the path of the repo user.
        Test with:
-            ssh debrepo@repo-host aptrepo.py
-       Help menu should be printed.
+            ssh debrepo@repo-host debhelper.py
     """
     # input stream: deb file paths
     # convert this to cpio stream
@@ -501,7 +500,7 @@ def push(repo_host, user='debrepo', verbose=False):
 
     # push to the other end
     user_host='{user}@{repo_host}'.format(user=user, repo_host=repo_host)
-    cmd=['/usr/bin/ssh', user_host, 'aptrepo.py', 'receive']
+    cmd=['/usr/bin/ssh', user_host, 'debhelper.py', 'receive']
     if verbose:
         print(' '.join(cmd))
 
@@ -510,8 +509,8 @@ def push(repo_host, user='debrepo', verbose=False):
     sys.exit(push.wait())
 
 
-# @baker.command
-def receive(repo_path='/var/data/debrepo/', verbose=True):
+@baker.command
+def receive(repo_path=b'/var/data/debrepo/', verbose=True):
     """handler or server for push.
     receive cpio stream from stdin.
     place received files under the repo.
@@ -528,9 +527,9 @@ def receive(repo_path='/var/data/debrepo/', verbose=True):
             ], stdout=PIPE, stderr=PIPE)
     out,err=cpio.communicate()
 
-    deb_files=filter(None, err.split('\n'))
+    deb_files=filter(None, err.split(b'\n'))
     if verbose:
-        print >>sys.stderr, 'workdir:', workdir
+        print('workdir:', workdir, file=sys.stderr)
 
     for deb_file in deb_files:
         if os.path.exists(deb_file):
@@ -538,13 +537,13 @@ def receive(repo_path='/var/data/debrepo/', verbose=True):
             dest=os.path.join(repo_path, os.path.basename(deb_file))
             os.rename(deb_file, dest)
             if verbose:
-                print >>sys.stderr, deb_file, '-->', dest
+                print(deb_file, '-->', dest, file=sys.stderr)
         else:
             # not a path, but an error message
-            print >>sys.stderr, 'err:', deb_file
+            print('err:', deb_file, file=sys.stderr)
 
     # todo: clean up workdir
-    update_repo(repo=repo_path, verbose=verbose)
+    update_repo(verbose=verbose)
 
 
 #### util
