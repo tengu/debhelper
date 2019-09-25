@@ -4,7 +4,7 @@ setup(
     name = "debhelper",
     py_modules = ["debhelper"],
     scripts = ["debhelper.py"],
-    version = "0.2.0",
+    version = "0.3.0",
     license = "LGPL",
     platforms = ['POSIX'],      # debian only..
     install_requires=["baker"],
