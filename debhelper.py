@@ -401,7 +401,10 @@ def update_repo(conf_file=None, verbose=1, dryrun=False):
     gpg --yes -abs -u `cat keyname` -o Release.gpg Release
     """
     dr = DebRepo(dryrun=dryrun, **config(conf_file=conf_file, verbose=verbose))
-    s = dr.update_repo()
+    if getpass.getuser() == dr.user:
+        s = dr.update_repo()
+    else:
+        s = call(['/usr/bin/sudo', '-H', '-u', dr.user, *sys.argv])
     sys.exit(s)
 
 
