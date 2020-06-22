@@ -343,7 +343,7 @@ class DebRepo:
             self.show(cmd)
             s=call(cmd, shell=True)
             if s!=0:
-                print >>sys.stderr, 'error:', cmd
+                print('error:', cmd, file=sys.stderr)
                 return 1
         self.report('Updated Packages and Release.')
         if sign:
